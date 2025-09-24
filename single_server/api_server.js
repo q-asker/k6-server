@@ -4,13 +4,14 @@ import { check, sleep } from 'k6';
 const BASE_URL = 'https://www.q-asker.com'
 const testFile = open('../testFile.pdf','b');
 
-const VUS = __ENV.VUS ? parseInt(__ENV.VUS) : 100;
-const DURATION = __ENV.DURATION || '1m';
+const STAGES_DURATION = __ENV.STAGES_DURATION || '10m';
+const STAGES_TARGET = __ENV.STAGES_TARGET ? parseInt(__ENV.STAGES_TARGET) : 6000;
 
 export const options = {
-    stages: [{duration: '10m', target: 6000}]
+    stages: [
+        { duration: STAGES_DURATION, target: STAGES_TARGET }
+    ],
 };
-
 export default function () {
     // 1. /s3/upload
     const uploadUrl = `${BASE_URL}/s3/upload`;
