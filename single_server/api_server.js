@@ -8,8 +8,7 @@ const VUS = __ENV.VUS ? parseInt(__ENV.VUS) : 100;
 const DURATION = __ENV.DURATION || '1m';
 
 export const options = {
-    vus: VUS,
-    duration: DURATION,
+    stages: [{duration: '10m', target: 6000}]
 };
 
 export default function () {
