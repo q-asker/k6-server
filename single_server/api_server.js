@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 const BASE_URL = 'https://www.q-asker.com'
-const testFile = open('./testFile.pdf','b');
+const testFile = open('../testFile.pdf','b');
 
 const VUS = __ENV.VUS ? parseInt(__ENV.VUS) : 100;
 const DURATION = __ENV.DURATION || '1m';
