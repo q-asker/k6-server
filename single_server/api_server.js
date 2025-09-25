@@ -3,7 +3,7 @@ import { check, sleep } from 'k6';
 import { Trend } from "k6/metrics";
 import Hashids from "https://cdn.jsdelivr.net/npm/hashids@2.3.0/+esm";
 
-const BASE_URL = 'https://api.q-asker.com'
+const BASE_URL = 'https://q-asker.com'
 const PROBLEM_SET_ID_MAX = 1156
 
 const problemSetGenerationRequestDuration = new Trend("problem_set_generation_duration");
