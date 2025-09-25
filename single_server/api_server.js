@@ -3,7 +3,7 @@ import { check, sleep } from 'k6';
 import { Trend } from "k6/metrics";
 import Hashids from "https://cdn.jsdelivr.net/npm/hashids@2.3.0/+esm";
 
-const BASE_URL = 'https://api.q-asker.com:8001'
+const BASE_URL = 'https://api.q-asker.com'
 const PROBLEM_SET_ID_MAX = 1156
 
 const problemSetGenerationRequestDuration = new Trend("problem_set_generation_duration");
@@ -43,7 +43,7 @@ function generateRandomProblemSetId(){
 
 export default function () {
     // 1. mocking ai server에 대한 문제 생성 테스트
-    const generationUrl = `${BASE_URL}/generationMock`;
+    const generationUrl = `${BASE_URL}:8001/generationMock`;
     const generationData = JSON.stringify({
         uploadedUrl: "uploadedUrl",
         quizCount: 5,
@@ -59,13 +59,13 @@ export default function () {
     const problemSetId = generateRandomProblemSetId();
 
     // 2. 생성된 problemSetId를 이용한 문제 세트 가져오기 테스트
-    const problemSetUrl = `${BASE_URL}/problem-set/:${problemSetId}`;
+    const problemSetUrl = `${BASE_URL}:8000/problem-set/:${problemSetId}`;
     const problemSetRes = http.get(problemSetUrl);
     problemSetGetRequestDuration.add(problemSetRes.timings.duration);
     check(problemSetRes, { '문제 세트 가져오기 성공': (r) => r.status === 200 });
 
     // 3. 생성된 problemSetId를 이용한 해설 가져오기 테스트
-    const explanationUrl = `${BASE_URL}/explanation/:${problemSetId}`;
+    const explanationUrl = `${BASE_URL}:8000/explanation/:${problemSetId}`;
     const explanationRes = http.get(explanationUrl);
     explanationGetRequestDuration.add(explanationRes.timings.duration);
     check(explanationRes, { '해설 반환 성공': (r) => r.status === 200 });
