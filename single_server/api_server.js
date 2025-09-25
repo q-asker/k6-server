@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { Trend } from "k6/metrics";
+import { Trend, Counter } from "k6/metrics";
 import Hashids from "https://cdn.jsdelivr.net/npm/hashids@2.3.0/+esm";
 
 const BASE_URL = 'https://api.q-asker.com'
@@ -9,6 +9,9 @@ const PROBLEM_SET_ID_MAX = 1156
 const problemSetGenerationRequestDuration = new Trend("problem_set_generation_duration");
 const problemSetGetRequestDuration = new Trend("problem_set_get_duration");
 const explanationGetRequestDuration = new Trend("explanation_get_duration");
+
+const checkSuccess = new Counter("check_success");
+const checkFail = new Counter("check_fail");
 
 export const options = {
   scenarios: {
@@ -55,18 +58,30 @@ export default function () {
         headers: { 'Content-Type': 'application/json' }
     });
     problemSetGenerationRequestDuration.add(generationRes.timings.duration);
-    check(generationRes, { '문제 생성 성공': (r) => r.status === 200 })
+    
+    if (generationRes.status === 200) {
+        checkSuccess.add(1, { check: "문제 생성 성공" });
+    } else {
+        checkFail.add(1, { check: "문제 생성 성공" });
+    }    
     const problemSetId = generateRandomProblemSetId();
 
     // 2. 생성된 problemSetId를 이용한 문제 세트 가져오기 테스트
     const problemSetUrl = `${BASE_URL}/problem-set/:${problemSetId}`;
     const problemSetRes = http.get(problemSetUrl);
     problemSetGetRequestDuration.add(problemSetRes.timings.duration);
-    check(problemSetRes, { '문제 세트 가져오기 성공': (r) => r.status === 200 });
+    if (problemSetRes.status === 200) {
+        checkSuccess.add(1, { check: "문제 세트 가져오기 성공" });
+    } else {
+        checkFail.add(1, { check: "문제 세트 가져오기 성공" });
+    }
 
     // 3. 생성된 problemSetId를 이용한 해설 가져오기 테스트
     const explanationUrl = `${BASE_URL}/explanation/:${problemSetId}`;
     const explanationRes = http.get(explanationUrl);
     explanationGetRequestDuration.add(explanationRes.timings.duration);
-    check(explanationRes, { '해설 반환 성공': (r) => r.status === 200 });
-}
+    if (problemSetRes.status === 200) {
+        checkSuccess.add(1, { check: "문제 세트 가져오기 성공" });
+    } else {
+        checkFail.add(1, { check: "문제 세트 가져오기 성공" });
+    }}
