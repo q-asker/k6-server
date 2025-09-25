@@ -1,43 +1,72 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { Trend } from "k6/metrics";
+import Hashids from "https://cdn.jsdelivr.net/npm/hashids@2.3.0/+esm";
 
-const BASE_URL = 'https://www.q-asker.com'
-const testFile = open('../testFile.pdf','b');
+const BASE_URL = 'https://api.q-asker.com'
+const PROBLEM_SET_ID_MAX = 1156
+
+const problemSetGenerationRequestDuration = new Trend("problem_set_generation_duration");
+const problemSetGetRequestDuration = new Trend("problem_set_get_duration");
+const explanationGetRequestDuration = new Trend("explanation_get_duration");
+
+export const options = {
+  scenarios: {
+    load_pattern: {
+      executor: "ramping-arrival-rate",
+      startRate: 10,        // 시작은 분당 10 req (≈0.17 RPS)
+      timeUnit: "1m",       // rate 기준 단위
+      preAllocatedVUs: 20,  // 충분히 크게 잡기
+      maxVUs: 100,
+
+      stages: [
+        { target: 79, duration: "5m" },  // Ramp-up: 10 → 79 req/min (≈1.31 RPS)
+        { target: 79, duration: "5m" },  // Peak 유지
+        { target: 10, duration: "5m" },  // Ramp-down
+      ],
+    },
+  },
+  thresholds: {
+    problem_set_generation_duration: ["avg<200"], 
+    problem_set_get_duration: ["avg<200"], 
+    explanation_get_duration: ["avg<200"], 
+  },
+}
+function generateRandomProblemSetId(){
+    const salt = __ENV.SALT;
+    const minLength = parseInt(__ENV.MIN_LENGTH) || 6;
+    const hashids = new Hashids(salt, minLength);
+    const randomId = Math.floor(Math.random() * PROBLEM_SET_ID_MAX) + 1;
+    return hashids.encode(randomId);
+}
 
 
 export default function () {
-    // 1. /s3/upload
-    const uploadUrl = `${BASE_URL}/s3/upload`;
-    const uploadData  = {
-        file: http.file(testFile, 'testFile.pdf', 'application/pdf'),
-    };   
-    const uploadRes = http.post(uploadUrl, uploadData, {
-        tags: { name: 'API_S3_Upload' },
-    });
-    check(uploadRes, { 'S3 업로드 성공': (r) => r.status === 200 }) || fail('S3 업로드 실패');
-    const uploadedUrl = uploadRes.json('uploadedUrl'); // 응답
-
-    // 2. /generation
-    const generationUrl = `${BASE_URL}/generation`;
+    // 1. mocking ai server에 대한 문제 생성 테스트
+    const generationUrl = `${BASE_URL}/generationMock`;
     const generationData = JSON.stringify({
-        uploadedUrl: uploadedUrl,
+        uploadedUrl: "uploadedUrl",
         quizCount: 5,
         quizType: "MULTIPLE",
         difficultyType: "RECALL",
         pageNumbers: [1,2,3,4,5]
     });
     const generationRes = http.post(generationUrl, generationData, {
-        headers: { 'Content-Type': 'application/json' },
-        tags: { name: 'API_Generate_Problem' },
+        headers: { 'Content-Type': 'application/json' }
     });
-    check(generationRes, { '문제 생성 성공': (r) => r.status === 200 })|| fail('문제 생성 실패');
-    const problemSetId = generationRes.json('problemSetId'); // 응답 
-    
-    // 3. /explanation
+    problemSetGenerationRequestDuration.add(generationRes.timings.duration);
+    check(generationRes, { '문제 생성 성공': (r) => r.status === 200 })
+    const problemSetId = generateRandomProblemSetId();
+
+    // 2. 생성된 problemSetId를 이용한 문제 세트 가져오기 테스트
+    const problemSetUrl = `${BASE_URL}/problem-set/:${problemSetId}`;
+    const problemSetRes = http.get(problemSetUrl);
+    problemSetGetRequestDuration.add(problemSetRes.timings.duration);
+    check(problemSetRes, { '문제 세트 가져오기 성공': (r) => r.status === 200 });
+
+    // 3. 생성된 problemSetId를 이용한 해설 가져오기 테스트
     const explanationUrl = `${BASE_URL}/explanation/:${problemSetId}`;
-    const explanationRes = http.get(explanationUrl, {
-        tags: { name: 'API_Grade_And_Explain' },
-    });
-    check(explanationRes, { '해설 반환 성공': (r) => r.status === 200 })|| fail('해설 반환 실패');
-    sleep(1); 
+    const explanationRes = http.get(explanationUrl);
+    explanationGetRequestDuration.add(explanationRes.timings.duration);
+    check(explanationRes, { '해설 반환 성공': (r) => r.status === 200 });
 }
