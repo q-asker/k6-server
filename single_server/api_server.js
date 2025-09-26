@@ -5,7 +5,7 @@ import Hashids from "https://cdn.jsdelivr.net/npm/hashids@2.3.0/+esm";
 
 const BASE_URL = "https://api.q-asker.com";
 const PROBLEM_SET_ID_MAX = parseInt(__ENV.PROBLEM_SET_ID_MAX) || 1000;
-const CRITERION_1 = 15000; // ms for /geration
+const CRITERION_1 = 2000; // ms for /geration
 const CRITERION_2 = 500; // ms for /problem-set/${problemSetId}, /explanation/${problemSetId}
 
 const problemSetGenerationRequestDuration = new Trend(
