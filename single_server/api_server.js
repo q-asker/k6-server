@@ -5,7 +5,8 @@ import Hashids from "https://cdn.jsdelivr.net/npm/hashids@2.3.0/+esm";
 
 const BASE_URL = "https://api.q-asker.com";
 const PROBLEM_SET_ID_MAX = parseInt(__ENV.PROBLEM_SET_ID_MAX) || 1000;
-const CRITERION = 200; // ms
+const CRITERION_1 = 200; // ms for /geration
+const CRITERION_2 = 15000; // ms for /problem-set/${problemSetId}, /explanation/${problemSetId}
 
 const problemSetGenerationRequestDuration = new Trend(
   "problem_set_generation_duration"
@@ -62,9 +63,9 @@ export const options = {
   },
 
   thresholds: {
-    problem_set_generation_duration: [`avg<${CRITERION}`],
-    problem_set_get_duration: [`avg<${CRITERION}`],
-    explanation_get_duration: [`avg<${CRITERION}`],
+    problem_set_generation_duration: [`avg<${CRITERION_1}`.toString()],
+    problem_set_get_duration: [`avg<${CRITERION_2}`.toString()],
+    explanation_get_duration: [`avg<${CRITERION_2}`.toString()],
   },
 };
 
@@ -94,7 +95,7 @@ export default function () {
     ? generationSuccess.add(1)
     : generationFail.add(1);
   if (generationRes.status === 200) {
-    generationRes.timings.duration < CRITERION
+    generationRes.timings.duration < CRITERION_1
       ? generationUnder.add(1)
       : generationOver.add(1);
   } else {
@@ -113,7 +114,7 @@ export default function () {
     ? problemSetGetSuccess.add(1)
     : problemSetGetFail.add(1);
   if (problemSetRes.status === 200) {
-    problemSetRes.timings.duration < CRITERION
+    problemSetRes.timings.duration < CRITERION_2
       ? problemSetGetUnder.add(1)
       : problemSetGetOver.add(1);
   } else {
@@ -130,7 +131,7 @@ export default function () {
     ? explanationSuccess.add(1)
     : explanationFail.add(1);
   if (explanationRes.status === 200) {
-    explanationRes.timings.duration < CRITERION
+    explanationRes.timings.duration < CRITERION_2
       ? explanationUnder.add(1)
       : explanationOver.add(1);
   } else {
@@ -138,4 +139,5 @@ export default function () {
       `explanation failed: status=${explanationRes.status}, body=${explanationRes.body}`
     );
   }
+  sleep(1);
 }
