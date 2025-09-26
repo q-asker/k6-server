@@ -106,7 +106,7 @@ export default function () {
   const problemSetId = generateRandomProblemSetId();
 
   // 2. 생성된 problemSetId를 이용한 문제 세트 가져오기 테스트
-  const problemSetUrl = `${BASE_URL}/problem-set/:${problemSetId}`;
+  const problemSetUrl = `${BASE_URL}/problem-set/${problemSetId}`;
   const problemSetRes = http.get(problemSetUrl);
   problemSetGetRequestDuration.add(problemSetRes.timings.duration);
   problemSetRes.status === 200
@@ -123,7 +123,7 @@ export default function () {
   }
 
   // 3. 생성된 problemSetId를 이용한 해설 가져오기 테스트
-  const explanationUrl = `${BASE_URL}/explanation/:${problemSetId}`;
+  const explanationUrl = `${BASE_URL}/explanation/${problemSetId}`;
   const explanationRes = http.get(explanationUrl);
   explanationGetRequestDuration.add(explanationRes.timings.duration);
   explanationRes.status === 200
