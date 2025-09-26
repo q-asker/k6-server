@@ -93,9 +93,15 @@ export default function () {
   generationRes.status === 200
     ? generationSuccess.add(1)
     : generationFail.add(1);
-  generationRes.timings.duration < CRITERION && generationRes.status === 200
-    ? generationUnder.add(1)
-    : generationOver.add(1);
+  if (generationRes.status === 200) {
+    generationRes.timings.duration < CRITERION
+      ? generationUnder.add(1)
+      : generationOver.add(1);
+  } else {
+    console.error(
+      `generation failed: status=${generationRes.status}, body=${generationRes.body}`
+    );
+  }
 
   const problemSetId = generateRandomProblemSetId();
 
@@ -106,9 +112,15 @@ export default function () {
   problemSetRes.status === 200
     ? problemSetGetSuccess.add(1)
     : problemSetGetFail.add(1);
-  problemSetRes.timings.duration < CRITERION && problemSetRes.status === 200
-    ? problemSetGetUnder.add(1)
-    : problemSetGetOver.add(1);
+  if (problemSetRes.status === 200) {
+    problemSetRes.timings.duration < CRITERION
+      ? problemSetGetUnder.add(1)
+      : problemSetGetOver.add(1);
+  } else {
+    console.error(
+      `problemSetGet failed: status=${generationRes.status}, body=${generationRes.body}`
+    );
+  }
 
   // 3. 생성된 problemSetId를 이용한 해설 가져오기 테스트
   const explanationUrl = `${BASE_URL}/explanation/:${problemSetId}`;
@@ -117,7 +129,13 @@ export default function () {
   explanationRes.status === 200
     ? explanationSuccess.add(1)
     : explanationFail.add(1);
-  explanationRes.timings.duration < CRITERION && explanationRes.status === 200
-    ? explanationUnder.add(1)
-    : explanationOver.add(1);
+  if (explanationRes.status === 200) {
+    explanationRes.timings.duration < CRITERION
+      ? explanationUnder.add(1)
+      : explanationOver.add(1);
+  } else {
+    console.error(
+      `explanation failed: status=${generationRes.status}, body=${generationRes.body}`
+    );
+  }
 }
