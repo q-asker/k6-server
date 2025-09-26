@@ -4,7 +4,7 @@ import { Trend, Counter } from "k6/metrics";
 import Hashids from "https://cdn.jsdelivr.net/npm/hashids@2.3.0/+esm";
 
 const BASE_URL = "https://api.q-asker.com";
-const PROBLEM_SET_ID_MAX = 1156;
+const PROBLEM_SET_ID_MAX = parseInt(__ENV.PROBLEM_SET_ID_MAX) || 1000;
 const CRITERION = 200; // ms
 
 const problemSetGenerationRequestDuration = new Trend(
