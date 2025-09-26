@@ -28,21 +28,21 @@ const explanationOver = new Counter("exp_over")
 
 export const options = {
   scenarios: {
-  // warm up - 5분 동안 약 0.5 RPS 유지 (서서히 준비 단계)
+  // warm up - 5분 동안 약 0.5 RPS 유지 (즉, 30RPM)
   warm_up: {
     executor: "constant-arrival-rate",
-    rate: 0.5,              // 초당 0.5 요청
+    rate: 30,               // 분당 30 요청 → 초당 약 0.5 RPS
     duration: "5m",
-    timeUnit: "1s",
+    timeUnit: "1m",
     preAllocatedVUs: 2,
     maxVUs: 10,
   },
-  // peak load - 5분 동안 1.5 RPS 유지
+  // peak load - 5분 동안 1.5 RPS 유지 (즉, 90RPM)
   high_peak_load: {
     executor: "constant-arrival-rate",
-    rate: 1.5,             // 초당 1.5 요청
+    rate: 90,               // 분당 90 요청 → 초당 약 1.5 RPS
     duration: "5m",
-    timeUnit: "1s",
+    timeUnit: "1m",
     startTime: "5m",
     preAllocatedVUs: 5,
     maxVUs: 20,
@@ -50,20 +50,20 @@ export const options = {
   // cool down - 다시 0.5 RPS로 감소
   cool_down: {
     executor: "constant-arrival-rate",
-    rate: 0.5,              // 초당 0.5 요청
+    rate: 30,               // 분당 30 요청
     duration: "5m",
-    timeUnit: "1s",
+    timeUnit: "1m",
     startTime: "10m",
     preAllocatedVUs: 2,
     maxVUs: 10,
   },
-},
 
   thresholds: {
     problem_set_generation_duration: [`avg<${CRITERION}`], 
     problem_set_get_duration: [`avg<${CRITERION}`], 
     explanation_get_duration: [`avg<${CRITERION}`], 
   },
+}
 }
 function generateRandomProblemSetId(){
     const salt = __ENV.SALT;
