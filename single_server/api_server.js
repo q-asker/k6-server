@@ -59,14 +59,15 @@ export const options = {
       preAllocatedVUs: 2,
       maxVUs: 10,
     },
+  },
 
-    thresholds: {
-      problem_set_generation_duration: [`avg<${CRITERION}`],
-      problem_set_get_duration: [`avg<${CRITERION}`],
-      explanation_get_duration: [`avg<${CRITERION}`],
-    },
+  thresholds: {
+    problem_set_generation_duration: [`avg<${CRITERION}`],
+    problem_set_get_duration: [`avg<${CRITERION}`],
+    explanation_get_duration: [`avg<${CRITERION}`],
   },
 };
+
 function generateRandomProblemSetId() {
   const salt = __ENV.SALT;
   const minLength = parseInt(__ENV.MIN_LENGTH) || 6;
@@ -113,10 +114,10 @@ export default function () {
   const explanationUrl = `${BASE_URL}/explanation/:${problemSetId}`;
   const explanationRes = http.get(explanationUrl);
   explanationGetRequestDuration.add(explanationRes.timings.duration);
-  generationRes.status === 200
+  explanationRes.status === 200
     ? explanationSuccess.add(1)
     : explanationFail.add(1);
-  generationRes.timings.duration < CRITERION && generationRes.status === 200
+  explanationRes.timings.duration < CRITERION && explanationRes.status === 200
     ? explanationUnder.add(1)
     : explanationOver.add(1);
 }
