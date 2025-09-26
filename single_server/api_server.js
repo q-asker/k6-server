@@ -118,7 +118,7 @@ export default function () {
       : problemSetGetOver.add(1);
   } else {
     console.error(
-      `problemSetGet failed: status=${generationRes.status}, body=${generationRes.body}`
+      `problemSetGet failed: status=${problemSetRes.status}, body=${problemSetRes.body}`
     );
   }
 
@@ -135,7 +135,7 @@ export default function () {
       : explanationOver.add(1);
   } else {
     console.error(
-      `explanation failed: status=${generationRes.status}, body=${generationRes.body}`
+      `explanation failed: status=${explanationRes.status}, body=${explanationRes.body}`
     );
   }
 }
